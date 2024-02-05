@@ -53,7 +53,7 @@ The hyperparams used for the experiments can be retrieved from the folder
 ```
 You can reproduce the results by typing
 ```bash
-python scripts/<dataset_name>.py
+bash scripts/<dataset_name>.sh
 ```
 or you can specify your own configuration as
 ```bash
