@@ -78,6 +78,7 @@ class GNN(Module):
         use_edge_attr: bool = False,     
         r: int = 1,
         shared: bool = False,
+        residual: bool = False
     ):
         super().__init__()
         # Node encoder
@@ -180,6 +181,9 @@ class GNN(Module):
             self.decoder.append(
                 Linear(in_size, out_size)
             )
+        
+        # Residual connection
+        self.residual = residual
 
     def forward(self, batched_data):
         batched_data = batched_data.to(device)
@@ -189,6 +193,8 @@ class GNN(Module):
             node_representation = layer(node_representation)
             if n_layer != self.num_node_encoder_layers-1:
                 node_representation = self.nonlinearity(node_representation)
+        # For the residual connection
+        input_x = node_representation.clone()
         # Encoding edge_attr
         edge_representation = batched_data.edge_attr.float()
         for n_layer, layer in enumerate(self.edge_encoder):
@@ -209,6 +215,9 @@ class GNN(Module):
                 node_representation = self.nonlinearity(node_representation)
             # Dropout
             node_representation = self.dropout(node_representation)
+            # Residual connection
+            if self.residual:
+                node_representation = node_representation + input_x
         # Getting a representation of the whole graph
         graph_representation = self.graph_pooling(
             node_representation, 

@@ -155,7 +155,8 @@ def main(**passed_args):
             graph_pooling=args.pooling, 
             use_edge_attr=args.use_edge_attr,       
             r=args.r,
-            shared=args.shared
+            shared=args.shared,
+            residual=args.residual
         ).to(device)
         # and count his number of learnable parameters
         num_learnable_params = sum(

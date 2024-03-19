@@ -123,6 +123,11 @@ def parse_args(**passed_args):
         help="If the model should use edge attributes"
     )  
     parser.add_argument(
+        "--residual", 
+        action="store_true", 
+        help="If the model should have a residual connection"
+    )  
+    parser.add_argument(
         "--pooling", 
         type=str, 
         default="sum",
