@@ -1,10 +1,13 @@
 import networkx as nx
 import numpy as np
+from itertools import product
 import torch
 from torch_geometric.data import Data
 from torch_geometric.data.datapipes import functional_transform
 from torch_geometric.transforms import BaseTransform
 from torch_geometric.utils import to_dense_adj, to_networkx
+import tqdm
+from homlib import Graph, hom
 
 @functional_transform('count_subgraphs')
 class CountSubgraphs(BaseTransform):
@@ -25,6 +28,7 @@ class CountSubgraphs(BaseTransform):
         
     def __call__(self, data: Data) -> Data:
         A = to_dense_adj(data.edge_index)[0]
+        G = to_networkx(data)
         num_nodes = A.shape[0]
         deg = A.sum(0).flatten()
         if self.subgraph == 3:
@@ -57,12 +61,16 @@ class CountSubgraphs(BaseTransform):
                 ) / 8
             )
         elif self.subgraph in [5, 6]:
-            G = to_networkx(data)
             cycles = list(nx.simple_cycles(G, length_bound=self.subgraph))
             count = np.sum([
                 len(c)==self.subgraph for c in cycles
             ])
             count = np.sum(count)
+        H = [(i, np.mod(i+1, self.subgraph)) for i in range(self.subgraph)]
+        H += [(edge[0]+self.subgraph, edge[1]+self.subgraph) for edge in H]
+        H += [(self.subgraph-1, self.subgraph)]
+        H = nx.from_edgelist(H).to_directed()
+        count = hom(from_networkx(H), from_networkx(G))
         data.y = torch.ones((1,1), dtype=torch.float32) * count
         return data
 
@@ -73,3 +81,28 @@ class CountSubgraphs(BaseTransform):
         )
         return out    
     
+def from_networkx(G):
+    G1 = Graph(G.number_of_nodes())
+    for edge in G.to_directed().edges():
+        G1.addEdge(edge[0], edge[1])
+    return G1
+
+
+def is_homomorphism(G, H, f):
+    homomorphism = True
+
+    for edge in set(G.to_directed().edges()):
+        if not ((f[edge[0]], f[edge[1]]) in set(H.to_directed().edges())):
+            homomorphism = False
+            break
+
+    return homomorphism
+
+def homomorphism_count(G, H):
+    assignments = product(np.arange(G.number_of_nodes()), repeat=H.number_of_nodes())
+    cnt = 0
+    for f in tqdm.tqdm(assignments):
+        if is_homomorphism(G, H, f):
+           cnt += 1
+
+    return cnt

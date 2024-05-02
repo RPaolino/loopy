@@ -65,4 +65,8 @@ python run_model.py --dataset subgraphcount_3 --r 1
 ```
 Similarly, you can specify the regression target of ``qm9`` by ``qm9_<n>`` where $n$ is the columns index of the target. For ``brec``, you need to specify the name of the raw file, i.e., ``brec_<name>`` where name is one among ``basic``, ``extension``, ``regular``, ``4vtx`` (for 4-vertex condition), ``dr`` (for distance regular), ``str`` (strongly regular), and ``cfi``. Moreover, ``exp_iso`` is the name given to ``exp`` when the task is to count the number of indistinguishable pairs.
 
-
+|r|Train MAE $\downarrow$| Test MAE $\downarrow$|
+|:--:|:--:|:--:|
+|0| $0.106 \pm 0.001$ | $0.1136\pm0.0005$|
+|1| $0.063 \pm 0.002$ | $0.079 \pm 0.001$|
+|2| $0.0037 \pm 0.0009$ | $0.018\pm0.006$ |
