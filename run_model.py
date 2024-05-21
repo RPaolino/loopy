@@ -1,6 +1,7 @@
 from copy import deepcopy
 import numpy as np
 import os
+from pympler import asizeof
 import time 
 import torch
 import tqdm
@@ -34,7 +35,7 @@ from src.training import (
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 THRESHOLD = 72.34 # Useful for BREC dataset
-RESULTS_DIR="results/"
+RESULTS_DIR = "results/"
 
 def main(**passed_args):
     seed_all()
@@ -48,7 +49,7 @@ def main(**passed_args):
                 f"{args.dataset}_{args.r}lwl_config.yaml"
             )
         )
-    if (args.dataset.startswith("qm9")
+    if (args.dataset.startswith("qm9") 
         or args.dataset.startswith("subgraphcount")):
         _, target = args.dataset.split("_")
         target = int(target)
@@ -90,6 +91,8 @@ def main(**passed_args):
         task=task
     )
     preprocessing_time = time.time()-time_start
+    dataset_memory_usage = asizeof.asizeof(dataset)
+    print(f"Dataset memory usage {dataset_memory_usage/1e9} GB")
     print("--")
     r_stats(dataset, r=args.r, lazy=args.lazy)
     print("--")
@@ -106,11 +109,11 @@ def main(**passed_args):
         f"loss_train": [], 
         f"loss_val": [],
         f"loss_test": [],
-        f"{metric_name}_train": [],
+        f"{metric_name}_train": [], 
         f"{metric_name}_val": [],
         f"{metric_name}_test": [],
-        f"runtime":  [],
-        f"runtime_per_epoch":  [],
+        f"training_time.mean":  [],
+        f"eval_time.mean":  [],
         f"epochs": [],
         f"best_val_epoch": [],
     }
@@ -193,6 +196,14 @@ def main(**passed_args):
             "val": [],
             "test": []
         }
+        stats = {
+            "training_time": [],
+            "eval_time": [],
+            "memory_allocated": [],
+            "memory_reserved": [],
+            "max_memory_allocated": [],
+            "max_memory_reserved": []
+        }
         # Begin training
         # Useful to standardize the feature
         mean = 0
@@ -203,13 +214,14 @@ def main(**passed_args):
             mean = dataset._data.y[train_idx].mean(0).item()
             std = dataset._data.y[train_idx].std(0).item()
             print("Standardizing:", f"mean={mean:.2E}", f"std={std:.2E}")
-        time_start = time.time()
+        
         progress = tqdm.tqdm(
             range(1, args.num_epochs+1), 
             desc="Training",
             disable=True if task=="num_identical_pairs" else False
         )
         for epoch in progress:
+            time_start = time.time()
             training_step(
                 dataset_name=args.dataset,
                 mean=mean,
@@ -219,6 +231,8 @@ def main(**passed_args):
                 optimizer=optimizer, 
                 loss_fn=loss
             )
+            stats["training_time"].append(time.time()-time_start)
+            time_start = time.time()
             current_results = eval_step(
                 dataset_name=args.dataset,
                 mean=mean,
@@ -229,6 +243,7 @@ def main(**passed_args):
                 metric_name=metric_name, 
                 metric_fn=metric_fn
             )
+            stats["eval_time"].append(time.time()-time_start)
             # Appending results
             for split in ["train", "val", "test"]:
                 results[split].append(
@@ -240,7 +255,20 @@ def main(**passed_args):
                 evaluation_metrics[split].append(
                     current_results[split][metric_name]
                 )
-            # Change description in console
+            stats["memory_allocated"].append(
+                torch.cuda.memory_allocated()/1e9
+            )
+            stats["memory_reserved"].append(
+                torch.cuda.memory_reserved()/1e9
+            )
+            stats["max_memory_allocated"].append(
+                torch.cuda.max_memory_allocated()/1e9
+            )
+            stats["max_memory_reserved"].append(
+                torch.cuda.max_memory_reserved()/1e9
+            )
+            torch.cuda.reset_peak_memory_stats()
+            #Change description in console
             best_val_epoch = best(
                 [val[metric_name] for val in results["val"]],
                 metric_name=metric_name
@@ -263,7 +291,6 @@ def main(**passed_args):
             # Exit conditions
             if optimizer.param_groups[0]['lr'] < args.min_lr:
                 break
-            runtime = time.time()-time_start
         if args.dataset.startswith("brec"):
             filepath = f"equivalent/{args.dataset}_{args.r}lWL.csv"
             best_model.eval()
@@ -299,8 +326,7 @@ def main(**passed_args):
             print(
                 "T^2 score - avg distinct: ", 
                 f"{np.mean(best_results['is_distinct']):.2E}±{np.std(best_results['is_distinct']):.2E}"
-            )
-            
+            )    
         best_val_epoch = best(
             [val[metric_name] for val in results["val"]],
             metric_name=metric_name
@@ -326,11 +352,11 @@ def main(**passed_args):
         best_results["epochs"].append(
             epoch
         )
-        best_results["runtime"].append(
-            runtime
+        best_results["training_time.mean"].append(
+            np.mean(stats["training_time"])
         )
-        best_results["runtime_per_epoch"].append(
-            runtime/epoch
+        best_results["eval_time.mean"].append(
+            np.mean(stats["eval_time"])
         )
         best_results["best_val_epoch"].append(
             int(best_val_epoch)
@@ -375,6 +401,7 @@ def main(**passed_args):
             log_text = log_text.expandtabs(4)
             print(log_text)
         print("--")
+
         
 
 if __name__ == "__main__":

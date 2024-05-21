@@ -3,7 +3,6 @@ from typing import Union
 
 from .choose_target import ChooseTarget
 from .constant_attribute import ConstantAttribute
-from .count_subgraphs import CountSubgraphs
 from .delete_attribute import DeleteAttribute
 from .euclidean_dist_to_edge_attr import EuclideanDistToEdgeAttr
 from .r_neighborhood import rNeighborhood
@@ -37,7 +36,7 @@ def build_transform(
         )
     if dataset_name.startswith("subgraphcount"):
         transforms.append(
-            CountSubgraphs(subgraph=target)
+            ChooseTarget(target=target)
         )
     if dataset_name.startswith("qm9"):
         transforms.extend(

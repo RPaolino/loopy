@@ -59,14 +59,56 @@ or you can specify your own configuration as
 ```bash
 python run_model.py --dataset zinc_subset --r 5
 ```
-Note that for ``subgraphcount`` you need to specify the length of the cycle as ``subgraphcount_<n>`` with $n\in\{3, 4, 5, 6\}$, i.e., by calling
-```bash
-python run_model.py --dataset subgraphcount_3 --r 1
-```
-Similarly, you can specify the regression target of ``qm9`` by ``qm9_<n>`` where $n$ is the columns index of the target. For ``brec``, you need to specify the name of the raw file, i.e., ``brec_<name>`` where name is one among ``basic``, ``extension``, ``regular``, ``4vtx`` (for 4-vertex condition), ``dr`` (for distance regular), ``str`` (strongly regular), and ``cfi``. Moreover, ``exp_iso`` is the name given to ``exp`` when the task is to count the number of indistinguishable pairs.
+For ``subgraphcount`` [[2]](#2), you need to specify the target motiv $n$
+<center>
+<table>
+  <tr>
+    <td><center>n</center></td>
+    <td><center>0</center></td>
+    <td><center>1</center></td>
+    <td><center>2</center></td>
+    <td><center>3</center></td>
+    <td><center>4</center></td>
+    <td><center>5</center></td>
+    <td><center>6</center></td>
+    <td><center>7</center></td>
+    <td><center>8</center></td>
+  </tr>
+  <tr>
+    <td><center>F</center></td>
+    <td><center><img src="imgs/chordal_4.svg"></center></td>
+    <td><center><img src="imgs/boat.svg"></center></td>
+    <td><center><img src="imgs/chordal_6.svg"></center></td>
+    <td><center><img src="imgs/cycle_3.svg"></center></td>
+    <td><center><img src="imgs/cycle_4.svg"></center></td>
+    <td><center><img src="imgs/cycle_5.svg"></center></td>
+    <td><center><img src="imgs/cycle_6.svg"></center></td>
+    <td><center><img src="imgs/chordal_4.svg"></center></td>
+    <td><center><img src="imgs/chordal_5.svg"></center></td>
+  </tr>
+<tr>
+    <td><center> </center></td>
+    <td colspan="3"><center>hom(F, G)</center></td>
+    <td colspan="6"><center>sub(F, G)</center></td>
+  </tr>
+</table>
+</center>
+by typing
 
-|r|Train MAE $\downarrow$| Test MAE $\downarrow$|
-|:--:|:--:|:--:|
-|0| $0.106 \pm 0.001$ | $0.1136\pm0.0005$|
-|1| $0.063 \pm 0.002$ | $0.079 \pm 0.001$|
-|2| $0.0037 \pm 0.0009$ | $0.018\pm0.006$ |
+```bash
+python run_model.py --dataset subgraphcount_2 --r 1
+```
+The first three motifs are used to test against homomorphism-counts, the latter six against subgraph-counts. The preprocessing of the dataset is done following [the official repo](https://github.com/subgraph23/homomorphism-expressivity) of [[3]](#3).
+
+Similarly, you can specify the regression target of ``qm9`` by ``qm9_<n>`` where $n$ is the columns index of the target. 
+
+For ``brec`` [[1]](#1), you need to specify the name of the raw file, i.e., ``brec_<name>`` where name is one among ``basic``, ``extension``, ``regular``, ``4vtx`` (4-vertex condition), ``dr`` (distance regular), ``str`` (strongly regular), and ``cfi``. 
+
+Moreover, ``exp_iso`` is the name given to ``exp`` when the task is to count the number of indistinguishable pairs.
+
+# References
+<a id="1">[1]</a> Yanbo Wang et al. "Towards better evaluation of gnn expressiveness with brec dataset." arXiv preprint arXiv:2304.07702 (2023).
+
+<a id="2">[2]</a> Lingxiao Zhao et al. "From stars to subgraphs: Uplifting any gnn with local structure awareness." In International Conference on Learning Representations, 2022.
+
+<a id="3">[3]</a> Bohang Zhang et al. "Beyond Weisfeiler-Lehman: A Quantitative Framework for GNN Expressiveness." In International Conference on Learning Representations, 2024.

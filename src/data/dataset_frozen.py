@@ -90,7 +90,7 @@ class Frozen(InMemoryDataset):
             desc="\tFreezing".expandtabs(4)
         )
         self._data_list = [
-            transform(dataset[k].clone()).to(device)  for k in progress
+            transform(dataset[k].clone())  for k in progress
         ]
         # Collating all elements of the dataset
         self._data = custom_collate(

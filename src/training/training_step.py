@@ -1,6 +1,8 @@
 import torch
 import torch.optim
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def initialize_tracking_dict(
     metric_name
 ):
@@ -36,12 +38,12 @@ def training_step(
     if train_loader is not None:
         model.train()
         for step, batch in enumerate(train_loader):
+            batch = batch.to(device)
             #print("STEP: " , step, ": ", batch)
             optimizer.zero_grad()
             y_pred = model(batch)
             y_true = batch.y
-            if (dataset_name.startswith("subgraphcount")
-                  or dataset_name.startswith("qm9")):
+            if dataset_name.startswith("qm9"):
                 y_true = (y_true-mean)/std
             loss = loss_fn(y_pred, y_true)
             loss.backward()
@@ -68,12 +70,12 @@ def eval_step(
         if loader is not None:
             y_pred, y_true = [], []
             for step, batch in enumerate(loader):
+                batch = batch.to(device)
                 with torch.no_grad():
                     y_pred.append(
                         model(batch)
                     )
-                    if (dataset_name.startswith("subgraphcount") 
-                          or dataset_name.startswith("qm9")):
+                    if dataset_name.startswith("qm9"):
                         y_true.append(
                             (batch.y-mean)/std
                         )

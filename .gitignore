@@ -1,5 +1,7 @@
 
-datasets
+datasets/*
+!datasets/subgraphcount
+datasets/subgraphcount/processed
 
 results
 
@@ -8,3 +10,9 @@ results
 *.out
 
 .vscode
+
+homlib
+
+homomorphism-expressivity
+
+wandb

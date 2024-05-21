@@ -1,3 +1,5 @@
+
+import csv
 import numpy as np
 import os
 from scipy.io import loadmat
@@ -5,49 +7,44 @@ import torch
 from torch_geometric.data import Data, InMemoryDataset
 import tqdm
 from urllib.request import urlretrieve as download_url
+from homlib import Graph, hom
 
 class Subgraphcount(InMemoryDataset):
-    
-    def __init__(self, root, transform=None, pre_transform=None):
-        super().__init__(
-            root.split("_")[0], 
-            transform, 
-            pre_transform
-        )
+    r"""
+    From https://github.com/subgraph23/homomorphism-expressivity
+    Homomorphism of the following motifs:
+        - chordal4: [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3]],
+        - boat: [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [3, 5], [4, 5]],
+        - chordal6: [[0, 1], [0, 2], [1, 2], [1, 3], [1, 4], [2, 4], [2, 5], [3, 4], [4, 5]],
+    Isomorphisms of the following motifs:
+        - cycle3: [[0, 1], [1, 2], [2, 0]], 
+        - cycle4: [[0, 1], [1, 2], [2, 3], [3, 0]], 
+        - cycle5: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]], 
+        - cycle6: [[0,1], [1, 2], [2, 0], [3, 4], [4, 5], [5, 0]], 
+        - chordal4: [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3]], 
+        - chordal5: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [0, 2], [0, 3]]
+    """
+    def __init__(self, root: str, **kwargs):
+        super().__init__(root=root.split("_")[0], **kwargs)
         self.data, self.slices = torch.load(
             self.processed_paths[0]
         )
 
     @property
     def raw_file_names(self):
-        return ["randomgraph.mat"]
+        return ["graph.npy", "counts.csv"]
 
     @property
     def processed_file_names(self):
-        return [f"data.pt"]
-
-    def download(self):
-        if not os.path.exists(self.raw_paths[0]):
-            download_url(
-                url=(
-                    "https://raw.githubusercontent.com/LingxiaoShawn/GNNAsKernel"
-                    +"/main/data/subgraphcount/raw/randomgraph.mat"
-                ),
-                filename=self.raw_paths[0]
-            )
+        return ["data.pt"]
 
     def process(self):
-        # Read data into huge `Data` list. 
-        b=self.processed_paths[0]       
-        a=loadmat(self.raw_paths[0]) #'subgraphcount/randomgraph.mat')
-        # list of adjacency matrix
-        A_list=a['A'][0]
-        # list of output
-        Y=a['F']
-        # Initialize list of Data object
+
+        graph_list, split = np.load(self.raw_paths[0], allow_pickle=True)
+        y = np.loadtxt(self.raw_paths[1], delimiter='\t', skiprows=2, dtype=int)
         data_list = []
-        for i in tqdm.trange(len(A_list), desc="Subgraphcount"):
-            A = A_list[i]
+        for i in tqdm.trange(len(graph_list), desc="Subgraphcount"):
+            A = graph_list[i]
             # Edge index
             E = A.nonzero()
             edge_index = torch.Tensor(
@@ -59,7 +56,8 @@ class Subgraphcount(InMemoryDataset):
             data_list.append(
                 Data(
                     edge_index=edge_index,
-                    num_nodes=A.shape[0]
+                    num_nodes=A.shape[0],
+                    y=torch.tensor(y[i]/y[split[()]["train"]].std(0)).unsqueeze(0)
                 )
             )
         # Apply pre_filter
@@ -71,10 +69,10 @@ class Subgraphcount(InMemoryDataset):
         # Save the data
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
-        
+
     def get_idx_split(self):
-        a = loadmat(self.raw_paths[0])
-        train_idx = a['train_idx']
-        val_idx = a['val_idx']
-        test_idx = a['test_idx']
+        (_, split) = np.load(self.raw_paths[0], allow_pickle=True)
+        train_idx = [split[()]['train'].tolist()]
+        val_idx = [split[()]['val'].tolist()]
+        test_idx = [split[()]['test'].tolist()]
         return train_idx, val_idx, test_idx

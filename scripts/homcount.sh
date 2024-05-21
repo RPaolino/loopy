@@ -1,8 +1,10 @@
 #!/bin/bash
-for cycle_length in 3 4 5 6
-do
-    for r in 0 1 2 3 4
-    do
-        python run_model.py --dataset subgraphcount_$cycle_length --r $r
-    done
-done
+python run_model.py --dataset subgraphcount_0 --r 2 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_1 --r 3 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_2 --r 3 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_3 --r 1 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_4 --r 2 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_5 --r 3 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_6 --r 4 --num_reps 4 --num_layers 5 --hidden_channels 56 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_7 --r 2 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
+python run_model.py --dataset subgraphcount_8 --r 3 --num_reps 4 --num_layers 5 --hidden_channels 64 --batch_size 128 --num_epochs 1200 --lr_scheduler_decay_rate 0.9 --lr_scheduler_decay_steps 10 --min_lr 0
