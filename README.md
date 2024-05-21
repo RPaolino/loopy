@@ -1,4 +1,4 @@
-# Weisfeiler and Leman Go Loopy
+# Weisfeiler and Leman Go Loopy <br>[![arXiv](https://img.shields.io/badge/arXiv-2403.13749-aa142d.svg?logo=arxiv&style=plastic)](https://arxiv.org/abs/2403.13749)
 + [Code Structure](#code-structure)
     - [r-neighborhoods](#r-neighborhoods)
     - [Loopy Layer](#loopy_layer)
