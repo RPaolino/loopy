@@ -16,7 +16,7 @@ def build_transform(
     lazy: bool
 ) -> Compose:
     r"""
-    Built an object `torch_geometric.transforms.Compose` with the specified list of transforms to apply.
+    Build an object `torch_geometric.transforms.Compose` with the specified list of transforms to apply.
     Args
     --
         dataset_name (str): name of the dataset.
@@ -29,10 +29,13 @@ def build_transform(
     dataset_name = dataset_name.lower()
     transforms = []
     if (dataset_name in ["csl", "cospectral10", "graph8c", "sr16622"]
-        or dataset_name.startswith("subgraphcount")
         or dataset_name.startswith("brec")):
         transforms.append(
             ConstantAttribute("x")
+        )
+    elif dataset_name.startswith("subgraphcount"):
+        transforms.append(
+            ConstantAttribute("x", dtype=int)
         )
     if dataset_name.startswith("subgraphcount"):
         transforms.append(

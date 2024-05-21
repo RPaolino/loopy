@@ -17,7 +17,7 @@ class ConstantAttribute(BaseTransform):
                 Defaults to torch.float32.
     """
     
-    def __init__(self, name_attr: str, value: float = 1, dtype=int):
+    def __init__(self, name_attr: str, value: float = 1, dtype=torch.float32):
         self.name_attr = name_attr
         self.value = value
         self.dtype = dtype

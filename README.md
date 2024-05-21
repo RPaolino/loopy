@@ -30,13 +30,12 @@ The computation of r-neighborhoods uses the ``networkx.simple_cycles`` function,
 
 The paths are usually computed in the preprocessing step. However, this could lead to memory overload, especially when $G$ is dense. In order to prevent OOM, we also provide a ``--lazy`` flag, which postpone the computation of cyclic permutation to the forward step. In this way, we don't store all paths for each graph in the dataset; rather, we compute them on the flight.
 
----
-
 ## Loopy Layers
 $r$-neighborhoods are then fed into a path-wise layer, which compute for each path an embedding. The embeddings are then processed together to get an embedding of the central node $v$.
 <center>
 <img src="imgs/lMPNN.svg">
 </center>
+
 In our code, we use GIN layers to process paths, as it is simple but maximally expressive on paths. You can choose a different neural architecture. Note that messages on paths are transmitted via ``torch.nn.functional.conv3d`` with kernel $[1, 0, 1]$, since only consecutive nodes are linked.
 
 To limit the number of learnable parameters, we provide a ``--shared`` flag: it guarantees that in each loopy layer we have shared weights among paths of different lengths.
@@ -60,6 +59,7 @@ or you can specify your own configuration as
 python run_model.py --dataset zinc_subset --r 5
 ```
 For ``subgraphcount`` [[2]](#2), you need to specify the target motiv $n$
+
 <center>
 <table>
   <tr>
@@ -93,6 +93,7 @@ For ``subgraphcount`` [[2]](#2), you need to specify the target motiv $n$
   </tr>
 </table>
 </center>
+
 by typing
 
 ```bash
@@ -106,9 +107,13 @@ For ``brec`` [[1]](#1), you need to specify the name of the raw file, i.e., ``br
 
 Moreover, ``exp_iso`` is the name given to ``exp`` when the task is to count the number of indistinguishable pairs.
 
+---
+
 # References
 <a id="1">[1]</a> Yanbo Wang et al. "Towards better evaluation of gnn expressiveness with brec dataset." arXiv preprint arXiv:2304.07702 (2023).
 
 <a id="2">[2]</a> Lingxiao Zhao et al. "From stars to subgraphs: Uplifting any gnn with local structure awareness." In International Conference on Learning Representations, 2022.
 
 <a id="3">[3]</a> Bohang Zhang et al. "Beyond Weisfeiler-Lehman: A Quantitative Framework for GNN Expressiveness." In International Conference on Learning Representations, 2024.
+
+---
