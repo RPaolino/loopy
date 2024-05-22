@@ -23,24 +23,24 @@ Given an input graph $G$ and a node $v$, the ``r-neighborhood`` $\mathcal{N}_r(v
 <img src="imgs/Nr.svg">
 </center>
 
-The computation of r-neighborhoods uses the ``networkx.simple_cycles`` function, which return simple cycles of the input graph $G$. The paths are then obtained as cyclic permutations of the simple cycles: the first node is the neighborhood center, while the others form the path.
+The computation of r-neighborhoods uses the ``networkx.simple_cycles`` function, which returns simple cycles of the input graph $G$. The paths are then obtained as cyclic permutations of the simple cycles: the first node is the neighborhood center, while the others form the path.
 <center>
 <img src="imgs/Nr_computation.svg">
 </center>
 
-The paths are usually computed in the preprocessing step. However, this could lead to memory overload, especially when $G$ is dense. In order to prevent OOM, we also provide a ``--lazy`` flag, which postpone the computation of cyclic permutation to the forward step. In this way, we don't store all paths for each graph in the dataset; rather, we compute them on the flight.
+The paths are usually computed in the preprocessing step. However, this could lead to memory overload, especially when $G$ is dense. To prevent OOM, we also provide a ``--lazy`` flag, which postpones the computation of cyclic permutation to the forward step. In this way, we don't store all paths for each graph in the dataset but compute them on the flight.
 
 ## Loopy Layers
-$r$-neighborhoods are then fed into a path-wise layer, which compute for each path an embedding. The embeddings are then processed together to get an embedding of the central node $v$.
+The $r$-neighborhoods are fed into a path-wise layer, which computes an embedding for each path. The embeddings are then processed together to get an embedding of the central node $v$.
 <center>
 <img src="imgs/lMPNN.svg">
 </center>
 
-In our code, we use GIN layers to process paths, as it is simple but maximally expressive on paths. You can choose a different neural architecture. Note that messages on paths are transmitted via ``torch.nn.functional.conv3d`` with kernel $[1, 0, 1]$, since only consecutive nodes are linked.
+Our code uses GIN layers to process paths, as it is simple but maximally expressive on paths. You can choose a different neural architecture. Note that messages on paths are transmitted via ``torch.nn.functional.conv3d`` with kernel $[1, 0, 1]$ since only consecutive nodes are linked.
 
-To limit the number of learnable parameters, we provide a ``--shared`` flag: it guarantees that in each loopy layer we have shared weights among paths of different lengths.
+To limit the number of learnable parameters, we provide a ``--shared`` flag: it guarantees that we have shared weights among paths of different lengths in each loopy layer.
 
-To implement the pooling operations, we use ``segment_csr``  instead of ``scatter``: the former is fully-deterministic, as noted in the [documentation](https://pytorch-scatter.readthedocs.io/en/latest/functions/segment_csr.html). When indices are not unique, the behavior of ``scatter`` is non-deterministic: one of the values from ``src`` will be picked arbitrarily and the gradient propagated to all elements with same index, resulting in an incorrent gradient computation.
+To implement the pooling operations, we use ``segment_csr``  instead of ``scatter``: the former is fully deterministic, as noted in the [documentation](https://pytorch-scatter.readthedocs.io/en/latest/functions/segment_csr.html). When indices are not unique, the behavior of ``scatter`` is non-deterministic: one of the values from ``src`` will be picked arbitrarily, and the gradient propagated to all elements with the same index, resulting in an incorrect gradient computation.
 
 ---
 
@@ -101,7 +101,7 @@ python run_model.py --dataset subgraphcount_2 --r 1
 ```
 The first three motifs are used to test against homomorphism-counts, the latter six against subgraph-counts. The preprocessing of the dataset is done following [the official repo](https://github.com/subgraph23/homomorphism-expressivity) of [[3]](#3).
 
-Similarly, you can specify the regression target of ``qm9`` by ``qm9_<n>`` where $n$ is the columns index of the target. 
+Similarly, you can specify the regression target of ``qm9`` by ``qm9_<n>`` where $n$ is the column's index of the target. 
 
 For ``brec`` [[1]](#1), you need to specify the name of the raw file, i.e., ``brec_<name>`` where name is one among ``basic``, ``extension``, ``regular``, ``4vtx`` (4-vertex condition), ``dr`` (distance regular), ``str`` (strongly regular), and ``cfi``. 
 
