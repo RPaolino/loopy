@@ -1,13 +1,7 @@
-
-import csv
 import numpy as np
-import os
-from scipy.io import loadmat
 import torch
 from torch_geometric.data import Data, InMemoryDataset
 import tqdm
-from urllib.request import urlretrieve as download_url
-from homlib import Graph, hom
 
 class Subgraphcount(InMemoryDataset):
     r"""
@@ -16,7 +10,7 @@ class Subgraphcount(InMemoryDataset):
         - chordal4: [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3]],
         - boat: [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [3, 5], [4, 5]],
         - chordal6: [[0, 1], [0, 2], [1, 2], [1, 3], [1, 4], [2, 4], [2, 5], [3, 4], [4, 5]],
-    Isomorphisms of the following motifs:
+    Subgraph isomorphisms of the following motifs:
         - cycle3: [[0, 1], [1, 2], [2, 0]], 
         - cycle4: [[0, 1], [1, 2], [2, 3], [3, 0]], 
         - cycle5: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]], 
