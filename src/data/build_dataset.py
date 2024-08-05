@@ -12,6 +12,7 @@ from .dataset_brec import BREC
 from .dataset_subgraphcount import Subgraphcount
 from .dataset_planar_sat_pairs import  PlanarSATPairs
 from .dataset_synthetic import Synthetic
+from .dataset_peptides import Peptides
    
     
 class GNNBenchmark(GNNBenchmarkDataset):
@@ -107,6 +108,10 @@ def build_dataset(
         dataset = QM9(
             root=dataset_dir.split("_")[0]
         ).shuffle()
+    elif dataset_name.startswith("peptides"):
+        dataset = Peptides(
+            root=dataset_dir
+        )
     else:
         raise NotImplementedError(f"Dataset {dataset_name} not implemented.")
     return dataset

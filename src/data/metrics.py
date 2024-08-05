@@ -1,6 +1,7 @@
 from functools import partial
 import numpy as np
 from scipy.special import binom
+from sklearn.metrics import average_precision_score
 import torch
 import torch.optim
 from torch.nn.functional import l1_loss, cosine_embedding_loss
@@ -29,6 +30,10 @@ def get_loss(
         loss = None
     elif dataset_name.startswith("brec"):
         loss = custom_cosine_embedding_loss
+    elif dataset_name == "peptides_struct":
+        loss = torch.nn.L1Loss()
+    elif dataset_name == "peptides_func":
+        loss = torch.nn.CrossEntropyLoss()
     else:
         raise NotImplementedError(f'No loss for {dataset_name}.')
     return loss
@@ -63,6 +68,12 @@ def get_evaluation_metric(
     elif dataset_name.startswith("brec"):
         metric_name = "cosine_embedding_loss" 
         metric_fn = custom_cosine_embedding_loss
+    elif dataset_name == "peptides_struct":
+        metric_name = "mae"
+        metric_fn = lambda y_pred, y_true: l1_loss(y_pred, y_true)
+    elif dataset_name == "peptides_func":
+        metric_name = "ap"
+        metric_fn = lambda y_pred, y_true: average_precision_score(y_true, y_pred)
     else:
         raise NotImplementedError(f"No evaluation metric for {dataset_name}.")
     return metric_name, metric_fn
@@ -73,13 +84,17 @@ def get_task(dataset_name: str) -> str:
                         "zinc"]
         or dataset_name.startswith("subgraphcount")
         or dataset_name.startswith("qm9")):
-        task="graph_regression"
+        task = "graph_regression"
     elif dataset_name in ["exp","cexp","csl"]:
         task = "graph_classification"   
     elif dataset_name in ["exp_iso", "cospectral10", "graph8c", "sr16622"]:
-        task="num_identical_pairs"
+        task = "num_identical_pairs"
     elif dataset_name.startswith("brec"):
-        task="T^2"
+        task = "T^2"
+    elif dataset_name == "peptides_struct":
+        task = "graph_regression"    
+    elif dataset_name == "peptides_func":
+        task = "graph_classification"    
     else:
         raise NotImplementedError(f"No task for {dataset_name}") 
     return task

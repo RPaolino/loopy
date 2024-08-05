@@ -134,6 +134,18 @@ def build_splits(
             test_idx[0] for _ in range(num_reps)
         ]
         seeds = np.arange(1, num_reps+1)
+    elif dataset_name.startswith("peptides"):
+        train_idx, val_idx, test_idx = dataset.get_idx_split()
+        train_idx = [
+            train_idx for _ in range(num_reps)
+        ]
+        val_idx = [
+            val_idx for _ in range(num_reps)
+        ]
+        test_idx = [
+            test_idx for _ in range(num_reps)
+        ]
+        seeds = np.arange(1, num_reps+1)
     else:
         assert False, f'No splits for {dataset_name}'
     out = list(zip(train_idx, val_idx, test_idx))
