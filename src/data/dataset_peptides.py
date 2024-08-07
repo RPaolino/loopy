@@ -6,7 +6,6 @@ import shutil
 import pandas as pd
 import torch
 from ogb.utils.mol import smiles2graph
-from ogb.utils.torch_util import replace_numpy_with_torchtensor
 from ogb.utils.url import decide_download
 from torch_geometric.data import Data, InMemoryDataset, download_url
 from tqdm import tqdm

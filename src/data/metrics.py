@@ -5,9 +5,8 @@ from sklearn.metrics import average_precision_score
 import torch
 import torch.optim
 from torch.nn.functional import l1_loss, cosine_embedding_loss
-from typing import Callable
+from typing import Callable, Union
 
-from .dataset_synthetic import Synthetic
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -33,14 +32,14 @@ def get_loss(
     elif dataset_name == "peptides_struct":
         loss = torch.nn.L1Loss()
     elif dataset_name == "peptides_func":
-        loss = torch.nn.CrossEntropyLoss()
+        loss = torch.nn.BCEWithLogitsLoss()
     else:
         raise NotImplementedError(f'No loss for {dataset_name}.')
     return loss
 
 def get_evaluation_metric(
     dataset_name: str
-) -> (str, Callable):
+) -> Union[str, Callable]:
     r"""It returns the function to be used during evaluation on the 
     ``dataset_name`` dataset.
     
@@ -73,7 +72,7 @@ def get_evaluation_metric(
         metric_fn = lambda y_pred, y_true: l1_loss(y_pred, y_true)
     elif dataset_name == "peptides_func":
         metric_name = "ap"
-        metric_fn = lambda y_pred, y_true: average_precision_score(y_true, y_pred)
+        metric_fn = lambda y_pred, y_true: average_precision_score(y_true.cpu(), y_pred.cpu())
     else:
         raise NotImplementedError(f"No evaluation metric for {dataset_name}.")
     return metric_name, metric_fn

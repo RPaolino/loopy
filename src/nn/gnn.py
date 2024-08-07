@@ -196,6 +196,9 @@ class GNN(Module):
             node_representation = layer(node_representation)
             if n_layer != self.num_node_encoder_layers-1:
                 node_representation = self.nonlinearity(node_representation)
+        if self.residual:
+            # For the residual connection
+            input_x = node_representation.clone()
         # Encoding edge_attr
         edge_representation = batched_data.edge_attr.float()
         for n_layer, layer in enumerate(self.edge_encoder):
@@ -204,9 +207,6 @@ class GNN(Module):
                 edge_representation = self.nonlinearity(edge_representation)
         # Convolutional layers
         for layer in range(self.num_layers):
-            if self.residual:
-                # For the residual connection
-                input_x = node_representation.clone()
             node_representation = self.convs[layer](
                 x=node_representation,
                 edge_weight=edge_representation,
