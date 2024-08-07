@@ -153,6 +153,7 @@ def main(**passed_args):
             num_layers=args.num_layers, 
             num_decoder_layers=args.num_decoder_layers, 
             norm=args.norm,
+            conv_dropout=args.conv_dropout, 
             dropout=args.dropout, 
             nonlinearity=args.nonlinearity,
             graph_pooling=args.pooling, 

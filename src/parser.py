@@ -77,6 +77,12 @@ def parse_args(**passed_args):
         help=f"Graph normalization (default `Identity`)"
     )
     parser.add_argument(
+        "--conv_dropout", 
+        type=float, 
+        default=0.0,
+        help="Dropout (after convolution) rate (default: 0.0)"
+    )
+    parser.add_argument(
         "--dropout", 
         type=float, 
         default=0.0,

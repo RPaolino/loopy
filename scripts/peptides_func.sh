@@ -1,0 +1,2 @@
+#!/bin/bash
+python run_model.py --dataset peptides_func --conv_dropout 0.2 --dropout 0.3 --residual --hidden_channels 128 --pooling mean --r 7 --num_layers 5 --num_decoder_layers 3 --batch_size 128 --norm BatchNorm1d --num_epochs 400 --num_reps 4 --num_edge_encoder_layers 2 --num_node_encoder_layers 2 --use_edge_attr --optimizer Adam --min_lr 1e-6

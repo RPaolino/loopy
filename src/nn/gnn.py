@@ -72,6 +72,7 @@ class GNN(Module):
         num_layers: int = 3, 
         num_decoder_layers: int  = 1, 
         norm: str = "Identity",
+        conv_dropout = 0.,
         dropout: float = 0., 
         nonlinearity: str = "relu",
         graph_pooling: str = "sum",   
@@ -163,6 +164,8 @@ class GNN(Module):
         # Nonlinearity
         self.nonlinearity = get_nonlinearity(nonlinearity)
         # Dropout      
+        self.conv_dropout = torch.nn.Dropout(p=conv_dropout)
+        # Dropout      
         self.dropout = torch.nn.Dropout(p=dropout)
         # Pooling function to generate whole-graph embeddings
         self.graph_pooling = partial(
@@ -193,8 +196,6 @@ class GNN(Module):
             node_representation = layer(node_representation)
             if n_layer != self.num_node_encoder_layers-1:
                 node_representation = self.nonlinearity(node_representation)
-        # For the residual connection
-        input_x = node_representation.clone()
         # Encoding edge_attr
         edge_representation = batched_data.edge_attr.float()
         for n_layer, layer in enumerate(self.edge_encoder):
@@ -203,6 +204,9 @@ class GNN(Module):
                 edge_representation = self.nonlinearity(edge_representation)
         # Convolutional layers
         for layer in range(self.num_layers):
+            if self.residual:
+                # For the residual connection
+                input_x = node_representation.clone()
             node_representation = self.convs[layer](
                 x=node_representation,
                 edge_weight=edge_representation,
@@ -214,7 +218,7 @@ class GNN(Module):
             if (layer != self.num_layers-1):
                 node_representation = self.nonlinearity(node_representation)
             # Dropout
-            node_representation = self.dropout(node_representation)
+            node_representation = self.conv_dropout(node_representation)
             # Residual connection
             if self.residual:
                 node_representation = node_representation + input_x
@@ -228,6 +232,7 @@ class GNN(Module):
             graph_representation = layer(graph_representation)
             if n_layer != self.num_decoder_layers-1:
                 graph_representation = self.nonlinearity(graph_representation)
+                graph_representation = self.dropout(graph_representation)
         return graph_representation
     
 
